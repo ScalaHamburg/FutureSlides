@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>The Future And Some Promises</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = 'css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+		</script>
+
+		<style type="text/css">
+		  code {font-size:150%}
+		  p { text-align: left; }
+		  section {background: rgba(255,165,60,0.9); }
+		</style>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+			<section>
+				<section data-background="backgrounds/testbild.png" style="background: rgba(255,165,60,0);"></section>
+
+				<section data-background="backgrounds/testbild.png">
+				    <h2>Setup</h2>
+				    <span class="fragment highlight-green">
+				    Some Text
+				    </span>
+				    <pre><code class="scala" data-trim contenteditable lang="off">
+class SomeCode{
+  println("Hello audience!")
+}
+				    </code></pre>
+
+					<aside class="notes">
+				        Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
+				    </aside>
+				</section>
+				<section>
+					<h1>... all about the future</h1>
+					<h4>The Omnipotent Monad</h4>
+					
+					<small>Patrick Trapp / <a href="http://twitter.com/VivaceVivo">@VivaceVivo</a></small>	
+					<aside class="notes">
+						CGI - Meetup since 2011, Scala 2.8.1 - Play!<br>
+						please questions - if too fast<br>
+						Let's jump right into it - Time is short
+					</aside>
+				</section>
+
+				<section>
+					<h2>What's the problem?</h2>
+					We need utilization of multiple cores using<br>
+					<ul>
+						<li>Threads & Locks</li>
+						<li>Callbacks</li>
+						<li>Futures</li>
+						<li>Actors... etc. etc.</li>
+					</ul>
+					<br>
+					<img class="fragment" src="Future/multithreaded.jpg">
+					<aside class="notes">
+				        Multi threading is hard...
+				        You know this creepy feeling whenever you leave the cozy servlet environment?
+				    </aside>
+				    <div />
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h2>Callbacks</h2>
+					<img src="Future/postbg-callback.png" width="700"/><br>
+					<div align="left">
+						A callback is a piece of executable code that is passed as an argument to other code, which is expected to call back (execute) the argument at some convenient time. The invocation may be immediate as in a synchronous callback, or it might happen at a later time as in an asynchronous callback.
+					</div>
+				</section>
+
+				<section>
+					<h2>a callback</h2>
+				
+					<pre><code class="scala" data-trim contenteditable data-eval="true">
+class Meetup {
+  def addSpeaker(who: String, doTalk: (String) => String) = {
+    println("prepare event...")
+    println(s"next speaker: $who!")
+    doTalk(who)
+  }
+}
+// -- -- 8< -- -- -- -- -- -- -- -- -- 
+def performTalk(who: String) = {
+  "Hello everybody!"
+}                                               
+
+new Meetup().addSpeaker("Patrick", performTalk)
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>it's getting tricky </h2>
+					<ul>
+						<li>when we call multiple async methods in a row</li>
+						<li>Continuation Passing Style</li>
+						<li>with exceptions, try, catch</li>
+						<li>with controll structures</li>
+					</ul>
+					<aside class="notes">
+						So let's all use Callbacks and be done with it.
+					</aside>
+				</section>
+
+				<section>
+					<img src="Future/callbackhell.png" class="stretch">
+					<aside class="notes">
+						So if Callback is not the right abstraction - we use something else...		
+					</aside>
+				</section>
+			</section>
+				
+			<section>
+				
+				<section>
+                    <h2>Future to the rescue</h2>
+                    <i >A Future is an object holding a value which may become available at some point.</i>
+                    <br><br>
+                    <ul class="fragment">
+                    	<li>encapsulate the hard stuff</li>
+                    	<li>provides a nice API</li>
+                    	<li>create a Future with static successful, failed or the apply-method</li>
+                    	<li>use callbacks on Future (onSuccess, onFailure, onComplete)</li>
+                    </ul>
+                    <aside class="notes">
+				        Basically CallBacks on steroide
+				    </aside>
+                </section>
+
+				<section>
+					<h2>simple Example (with callback)</h2>
+				
+					<pre><code class="scala" data-trim contenteditable >
+import scala.concurrent.{future, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
+
+def prepareTalk(topic: String):Future[String] = Future {
+	// this will take some time...
+	s"Talking about $topic: bla bla bla!"
+}
+
+prepareTalk("Future").onSuccess{case script =>
+	out.println(script)
+	out.println("Thank you")
+}
+
+					</code></pre>
+					 <aside class="notes">
+				        EDIT: rewrite with exception and onFailure
+				    </aside>
+				</section>
+				<section>
+					<h2>Using a Try...</h2>
+					<pre><code class="scala" data-trim contenteditable >
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Success, Failure}
+
+def prepareTalk(topic: String):Future[String] = Future {throw new Exception("Panic!!!")}
+
+prepareTalk("about Try...").onComplete {
+  case Success(script) => out.println(script)
+  case Failure(ex) => out.println("This Meetup has been canceled")
+}
+					</code></pre>
+					
+					<aside class="notes">
+						to combine both - use onCompllete with a Try...<br>
+						...<br>
+						so far we created a Future with it's apply Method
+					</aside>
+
+				</section>
+				<section>
+					<h2>Future's apply</h2>
+					<pre ><code lang="off">
+def apply[T](body: =>T)(implicit executor: ExecutionContext): scala.concurrent.Future[T] = {
+    val runnable = new PromiseCompletingRunnable(body)
+    executor.prepare.execute(runnable)
+    runnable.promise.future
+}
+					</code></pre>
+					<aside class="notes">
+						OFF<br>
+						But there are other methods to obtain a future
+					</aside>
+				</section>		
+			</section>
+			<section>
+				<section>
+                    <h2>Future - Promise</h2>
+                    <img src="Future/talkListen.png" />
+                    <aside class="notes">
+				        how to create a bright future... he needs to make her a promise!<br>
+				        and she will remember !<br>
+				        promise: write once<br>
+				        future - once fulfilled - fixed<br>
+				    </aside>
+                </section>
+                <section>
+                	<h2>how to make a Promise...</h2>
+                	<img src="Future/promise.jpg"><br>
+                	<ul>
+                		<li>Write once data structure</li>
+                		<li>opt. derive a Future</li>
+                		<li>complete as success</li>
+                		<li>complete as failure</li>
+                	</ul>
+                	<aside class="notes">
+                		A Promise is a writable, single-assignment container, which completes a future.<br>
+                		pending == 'Schrödinger's cat in the box'
+                	</aside>
+                </section>
+                <section>
+                	<h2>teasing a Promise...</h2>
+                	<pre><code class="scala" data-trim contenteditable >
+import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global                                                                                       
+
+type Cat = String
+
+val p = Promise[String]()
+val a = p.isCompleted
+p.success("Meow!")
+val b = p.isCompleted
+                	</code></pre>
+                	<aside class="notes">
+                		second success fails!<br>
+                		trySuccess<br>
+                		failure<br>
+                		try complete with scala.util.Try (throw new Exception or "purr")<br>
+                		p.future.value<br>
+                		completeWith(f)<br>
+                		p.failure(new scala.runtime.NonLocalReturnControl(p, "Bäh!"))
+                	</aside>
+                </section>
+                 <section>
+                	<h2>Promising</h2>
+                	<pre><code class="scala" data-trim contenteditable >
+import concurrent._ 
+import scala.language.postfixOps
+import concurrent.duration._                                                                           ;import java.util.concurrent.Executor;implicit val synchronousExecutionContext = ExecutionContext.fromExecutor(new Executor {def execute(task: Runnable) = task.run()})
+type Slides = String
+def shareSlides(doI : Promise[Slides]):Promise[Slides] = {
+  doI.completeWith(Future{
+  	out.println("doing one last edit...")
+    "slide deck"	
+  })
+}
+val do_I = Promise[Slides]()
+val iPromise = shareSlides(do_I)
+val text = Await.result(iPromise.future, 1 seconds)
+                	</code></pre>
+                	<aside class="notes">
+                		or failure with Exception...<br>
+                		just the writable part of the future-based concurrency paradigm<br>
+                		to see what is in a promise - we need to Await the Future
+                	</aside>
+                </section>
+                <section>
+                	<h2>All nice and wonderful - but...<h2>
+                </section>
+                <section>
+                	<img class="stretch" src="Future/Await.jpg" />
+                </section>
+                <section>
+                	<h2>... so basicly we can:</h2>
+                	<pre><code lang="off">Await(myFuture, Duration.Inf)</code></pre>
+                	or
+                	<pre><code lang="off">myFuture.isCompleted</code></pre>
+                	or
+                	<pre><code lang="off">myFuture.value</code></pre>
+                	<h2 class="fragment">... but we won't!</h2>
+                	<aside class="notes">
+                		it's lame like asking an Option.isDefined
+                	</aside>
+                </section>
+			</section>
+			<section>
+				<section>
+					<img src="Future/BackToTheFuture.png" />
+
+					<div class="fragment">
+						<h2>Monadic operations</h2>
+						<b><i>yes!</i></b> the Scala Future is a monad - some claim it's omnipotent...<br>
+					<div>
+					<aside class="notes">
+                		You don't simply Await the Future!
+                		this means basicly: Future can be used like a Scala 'collection'<br>
+                	</aside>
+				</section>
+				
+				<section>
+					<h2>rationale</h2>
+					<pre><code lang="off">
+val dateOfTalk = Future {
+  meetup.suggestTalk("All about...")
+}
+
+dateOfTalk onSuccess { case date =>
+  val slides = Future {
+    if (isEnoughTimeToPrepare(date)) prepareTalk("about Future", date)
+    else throw new Exception("Panic!!!")
+  }
+  
+  slides onSuccess {
+    case text => println("Welcome... " + text)
+  }
+}
+					</code></pre>
+					<aside class="notes">
+						OFF<br>
+						the second future is nested!<br>
+						the slides Future is not in the scope with the rest of the code
+					</aside>
+				</section>
+
+				<section>
+					<h2>same with 'map'</h2>
+					<pre><code lang="off">
+val dateOfTalk = Future {
+  meetup.suggestTalk("All about...")
+}
+val preparedScript = dateOfTalk map { date => 
+  if (isEnoughTimeToPrepare(date)) prepareTalk("about Future", date)
+  else throw new Exception("Panic!!!")
+}
+preparedScript onSuccess {
+  case _ => println("Welcome... " + text)
+}
+					</code></pre>
+					<aside class="notes">
+						eliminated one onSuccess callback and, more importantly, the nesting<br>
+						OFF! <br>
+                		see: https://notepad.mmakowski.com/Tech/Scala%20Futures%20on%20a%20Single%20Thread
+					</aside>
+				</section>
+				<section>
+					<h2>other monadic functions</h2>					
+					<h3 class="fragment">foreach</h3>
+					<h3 class="fragment">flatMap</h3>
+					<h3 class="fragment">filter</h3>
+					<h3 class="fragment">transform</h3>
+					<h3 class="fragment">zip</h3>
+					<aside class="notes">
+						foreach - Asynchronously processes the value in the future once the value becomes available.<br>
+						flatMap<br>
+						filter<br>
+						transform - like map but also for failure<br>
+						zip - compine a tuple of futures to a future of a tuple.<br>
+					</aside>
+				</section>
+				<section>
+					<h2>for comprehension</h2>
+					<pre><code class="scala" data-trim contenteditable >
+import scala.concurrent._
+import scala.concurrent.duration._     
+import scala.language.postfixOps                                                 		
+																									;import java.util.concurrent.Executor;implicit val synchronousExecutionContext = ExecutionContext.fromExecutor(new Executor {def execute(task: Runnable) = task.run()})
+val talk1 = Future { 25 minutes}
+val talk2 = Future { 45 minutes}
+
+val meetupDuration = for {
+  a <- talk1 // returns Future(25 minutes)
+  b <- talk2 // returns Future(45 minutes)
+} yield a + b
+
+//is translated to: 
+//talk1 flatMap { (a) => talk2 map { (b) => a + b } }
+
+Await.result(meetupDuration, 1 seconds)
+					</code></pre>
+					<aside class="notes">
+						be careful not to create the future IN the for-block, as the calculation will be sequential!
+					</aside>
+				</section>
+
+			</section>	
+
+
+			<section>
+				<section style="background: rgba(255,165,60,0)">
+					<img class="stretch" src="Future/bonus.png">
+				</section>
+
+				<section>
+					<h2>Recover failure</h2>
+					<pre><code>
+import scala.concurrent.duration._     
+import scala.language.postfixOps 
+import scala.concurrent._ 																				;import java.util.concurrent.Executor;implicit val synchronousExecutionContext = ExecutionContext.fromExecutor(new Executor {def execute(task: Runnable) = task.run()})		
+
+val question = Future{"what if..."}
+def answerQuestion(q:String) = "Bla bla bla..."
+
+val answer: Future[String] = question map {
+  q => answerQuestion(q)
+} recover {
+  case e:Exception => "Sorry, I don't know."
+}
+
+Await.result(answer, 1 seconds)
+					</code></pre>
+				
+					<aside class="notes">
+						<b>recover</b>: Creates a new future that will handle any <b>matching</b> throwable<br>
+						throw new Exception("Dunno!")<br>
+						or<br>
+						val telephoneJoker = Future{"sorry, wrong number!"}<br>
+						recoverWith( ... => telephoneJoker)<br>
+						or<br>
+						val defaultAnswer = Future{"I didn't get the question."}<br>
+						answer <b>fallbackTo</b> defaultAnswer<br>
+					</aside>
+				</section>
+
+				<section>
+					<h2>failed projection</h2>
+						If the future fails, the projection returns a future with a value of type Throwable.<br>
+						If the future succeeds, the projection fails with a NoSuchElementException.
+					<pre><code>
+import scala.concurrent._ 
+import scala.concurrent.ExecutionContext.Implicits.global 
+import scala.concurrent.duration._     
+import scala.language.postfixOps 
+
+val f = Future { 5 }
+val p = f.failed
+Await.result(p, 1 seconds)
+
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>and then...?</h2>
+					<pre><code >
+import scala.concurrent._ 																				;import java.util.concurrent.Executor;implicit val synchronousExecutionContext = ExecutionContext.fromExecutor(new Executor {def execute(task: Runnable) = task.run()})		
+
+val f = Future { 5 }
+f andThen {
+   case r => println("perform side effects")
+} andThen {
+   case t => println("in exact order: " + t)
+}
+f.value
+				</code></pre>
+				<aside class="notes">
+					Future { throw null }
+				</aside>
+				</section>
+
+				<section>
+					<h2>Execution Context</h2>
+					<ul>
+						<li>By default, futures and promises are non-blocking</li>
+						<li>The global execution Context uses limited threads!</li>
+						<li>never block in a Future! (use scala.concurrent.blocking{})</li>
+						<li>dedicated ExecutionContext for long lasting blocking operations (thread pool)</li>
+					</ul>
+					<pre><code>
+Runtime.getRuntime.availableProcessors()
+					</code></pre>
+				</section>
+				
+				
+
+				<section>
+					<h2>Future.sequence</h2>
+					<pre><code>
+import scala.concurrent.duration._     
+import scala.language.postfixOps
+import scala.concurrent._                                                                                           ;import java.util.concurrent.Executor;implicit val synchronousExecutionContext = ExecutionContext.fromExecutor(new Executor {def execute(task: Runnable) = task.run()})
+
+def processNumber(n:Int) = Future{n * n}
+val l = List(1,2,3,4,5).map(processNumber)
+val s = Future.sequence(l)
+
+Await.result(s, 1 seconds)
+					</code></pre>
+					<aside class ="notes">
+						firstCompletedOf, find
+					</aside>
+				</section>
+	
+			</section>
+
+			<section>
+				<section>
+					<img class="stretch" src="Future/questions.jpg">
+				</section>
+				<section>
+					<img class="stretch" src="Future/questions2.jpg">
+				</section>
+				<section>
+					<h2>Big thanks to</h2>
+					<ul>
+						<li>INOIO - OOSE</li>
+						<li>https://github.com/hakimel/reveal.js</li>
+						<li>http://docs.scala-lang.org/overviews/core/futures.html</li>
+						<li>http://danielwestheide.com/blog/2013/01/16/the-neophytes-guide-to-scala-part-9-promises-and-futures-in-practice.html</li>
+						<li>http://scala.hamburg</li>
+						<li>@ScalaHamburg</li>
+					</ul>
+					<aside class="notes">
+						<li>https://notepad.mmakowski.com/Tech/Scala%20Futures%20on%20a%20Single%20Thread</li>
+					</aside>
+				</section>
+			</section>
+			
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+		<script src="js/jquery-2.1.1.js"></script>
+		<script src="js/codeSlides.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+				width: 1400,
+    			height: 831,
+    			// Factor of the display size that should remain empty around the content
+    			margin: 0.1,
+
+    			// Bounds for smallest/largest possible scale to apply to content
+			    minScale: 0.2,
+			    maxScale: 1.0,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				parallaxBackgroundImage: 'Future/future-bg.jpg',
+				parallaxBackgroundSize: '1500px 831px',
+				parallaxBackgroundHorizontal: 0,
+    			parallaxBackgroundVertical: 0,
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },					
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
