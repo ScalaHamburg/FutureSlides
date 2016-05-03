@@ -58,7 +58,7 @@
 				    </span>
 				    <pre><code class="scala" data-trim contenteditable lang="off">
 class SomeCode{
-  println("Hello audience!")
+  out.println("Hello audience!")
 }
 				    </code></pre>
 
@@ -112,8 +112,8 @@ class SomeCode{
 					<pre><code class="scala" data-trim contenteditable data-eval="true">
 class Meetup {
   def addSpeaker(who: String, doTalk: (String) => String) = {
-    println("prepare event...")
-    println(s"next speaker: $who!")
+    out.println("prepare event...")
+    out.println(s"next speaker: $who!")
     doTalk(who)
   }
 }
@@ -342,7 +342,7 @@ dateOfTalk onSuccess { case date =>
   }
   
   slides onSuccess {
-    case text => println("Welcome... " + text)
+    case text => out.println("Welcome... " + text)
   }
 }
 					</code></pre>
@@ -364,7 +364,7 @@ val preparedScript = dateOfTalk map { date =>
   else throw new Exception("Panic!!!")
 }
 preparedScript onSuccess {
-  case _ => println("Welcome... " + text)
+  case _ => out.println("Welcome... " + text)
 }
 					</code></pre>
 					<aside class="notes">
@@ -476,9 +476,9 @@ import scala.concurrent._ 																				;import java.util.concurrent.Execu
 
 val f = Future { 5 }
 f andThen {
-   case r => println("perform side effects")
+   case r => out.println("perform side effects")
 } andThen {
-   case t => println("in exact order: " + t)
+   case t => out.println("in exact order: " + t)
 }
 f.value
 				</code></pre>
