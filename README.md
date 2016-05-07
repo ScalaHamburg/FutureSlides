@@ -14,4 +14,9 @@ You may also want to take a look at the Intro: http://lab.hakim.se/reveal-js/#/
 Once downloaded and extracted, put the Future.html and the Future folder in the extracted Reveal.js folder.
 Now open the Future.html Page in a Browser - I used Chrome.
 
+## code execution ##
+
+In order to be able to execute the code snippets in some slides, the codeSlides.js-file needs to be present in the "js"-folder
+and the scripting backend needs to be started on port 8080.
+
 Have fun!
